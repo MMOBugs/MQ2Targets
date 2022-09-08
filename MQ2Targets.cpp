@@ -705,14 +705,14 @@ PLUGIN_API void SetGameState(DWORD GameState)
 		char szINIFileName[MAX_STRING] = { 0 }, szTemp[MAX_STRING] = { 0 };
 		sprintf_s(szINIFileName, "%s\\%s_%s.ini", gPathConfig, GetServerShortName(), pLocalPC->Name);
 		DisplayEnabled = true;
-		if (GetPrivateProfileString(PLUGIN_NAME, "DisplayHUDElements", NULL, szTemp, MAX_STRING, szINIFileName)) {
+		if (GetPrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", NULL, szTemp, MAX_STRING, szINIFileName)) {
 			if (!_stricmp(szTemp, "yes") || !_stricmp(szTemp, "on"))
 				DisplayEnabled = true;
 			else
 				DisplayEnabled = false;
 		}
 		else
-			WritePrivateProfileString(PLUGIN_NAME, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
+			WritePrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
 		StartSearchingForTargets();
 	}
 }
@@ -1007,7 +1007,7 @@ void LoadZoneTargets()
 	if (ZoneID > MAX_ZONES)
 		ZoneID &= 0x7FFF;
 	if (ZoneID >= MAX_ZONES || ZoneID <= 0) {
-		WriteChatf("\ar%s\aw::\ayBad zone ID: \ag%d", PLUGIN_NAME, ZoneID);
+		WriteChatf("\ar%s\aw::\ayBad zone ID: \ag%d", mqplugin::PluginName, ZoneID);
 		return;
 	}
 
@@ -1248,7 +1248,7 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 	if (ZoneID > MAX_ZONES)
 		ZoneID &= 0x7FFF;
 	if (ZoneID >= MAX_ZONES || ZoneID <= 0) {
-		WriteChatf("\ar%s\aw::\ayBad zone ID: \ag%d", PLUGIN_NAME, ZoneID);
+		WriteChatf("\ar%s\aw::\ayBad zone ID: \ag%d", mqplugin::PluginName, ZoneID);
 		return;
 	}
 
@@ -1386,7 +1386,7 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 				}
 			}
 			char szTmp[MAX_STRING] = { 0 };
-			WriteChatf("\ar%s\aw::\ayInvalid color option.  Choices are:", PLUGIN_NAME);
+			WriteChatf("\ar%s\aw::\ayInvalid color option.  Choices are:", mqplugin::PluginName);
 			for (int z = 0; ColorOption[z] > -1; z++) {
 				sprintf_s(szTmp, " --> %s", ColorName[z]);
 				WriteChatColor(szTmp, ColorOption[z]);
@@ -1403,7 +1403,7 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 				}
 			}
 			char szTmp[MAX_STRING] = { 0 };
-			WriteChatf("\ar%s\aw::\ayInvalid color option.  Choices are:", PLUGIN_NAME);
+			WriteChatf("\ar%s\aw::\ayInvalid color option.  Choices are:", mqplugin::PluginName);
 			for (int z = 0; ColorOption[z] > -1; z++) {
 				sprintf_s(szTmp, " --> %s", ColorName[z]);
 				WriteChatColor(szTmp, ColorOption[z]);
@@ -2064,7 +2064,7 @@ void AssignSound(PCHAR pLine)
 			}
 			// save Sound ID/filename
 			WritePrivateProfileString("Sounds", szSoundID, szFileName, INIFileName);
-			WriteChatf("\ar%s\aw::\agAdded alert sound id \am%s\ag = \at%s", PLUGIN_NAME, szSoundID, szFileName);
+			WriteChatf("\ar%s\aw::\agAdded alert sound id \am%s\ag = \at%s", mqplugin::PluginName, szSoundID, szFileName);
 		}
 	}
 
@@ -2075,7 +2075,7 @@ void AssignSound(PCHAR pLine)
 void WatchUsage(bool bHelp)
 {
 	WriteChatf("\ao--------------------------------------------------------------------------------------------------------");
-	WriteChatf("%s %.2f", PLUGIN_NAME, MQ2Version);
+	WriteChatf("%s %.2f", mqplugin::PluginName, MQ2Version);
 	if (g_useAllZone) {
 		WriteChatf("\ay/watch add \"spawnsearch string\" [notify] [sound #] [nohud] [priority #] [/all]");
 		WriteChatf("\ay/watch add : by itself, if you have a target, will add the target to watch list");
@@ -2126,7 +2126,7 @@ void WatchUsage(bool bHelp)
 void WriteToChat(PCHAR szText, DWORD Color)
 {
 	CHAR szOutput[MAX_STRING] = { 0 };
-	sprintf_s(szOutput, "%s: %s", PLUGIN_NAME, szText);
+	sprintf_s(szOutput, "%s: %s", mqplugin::PluginName, szText);
 	if (g_UseMQ2Chat)
 		WriteChatColor(szOutput, Color);
 	else
