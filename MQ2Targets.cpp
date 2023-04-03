@@ -2447,7 +2447,7 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 		DebugChat("Checking pItem->Spawn.SpawniD=%d vs pSpawn->SpawnID=%d, pSpawn->DisplayedName='%s', pItem->Spawn.DisplayedName = '%s'",
 			rec.SpawnID, SpawnID, DisplayedName, rec.DisplayedName);
 
-		if (rec.SpawnID == SpawnID && !DisplayedName[0] && !rec.DisplayedName.empty() && strstr(DisplayedName, rec.DisplayedName.c_str()))
+		if (rec.SpawnID == SpawnID && DisplayedName[0] && !rec.DisplayedName.empty() && strstr(DisplayedName, rec.DisplayedName.c_str()))
 		{
 			DebugChat("MQ2Targets::RemoveFromNotify((pSpawn), %d): Removing '%s' from list.", bPopup, rec.DisplayedName.c_str());
 
