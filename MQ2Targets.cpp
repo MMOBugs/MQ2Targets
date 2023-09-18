@@ -40,7 +40,7 @@ x.xx -------- - Various code over the last couple years added by htw, spawn/desp
 #define POPUPCOLORREM		0x0D
 #define CHATCOLORREM		0xCC0033
 #define TARGETHUDSTRING      "&clr${Target.CleanName} ${Target.Level} ${Target.Class.ShortName}  ${Target.Distance}&arr(${Target.HeadingTo})"
-#define NOTIFYHUDSTRING      "${Target.CleanName}(${Target.Level} ${Target.Class.ShortName})"
+#define NOTIFYHUDSTRING      "${Target.CleanName} (${Target.Level} ${Target.Class.ShortName})"
 #define NOTIFYCHATSTRING      "${Target.CleanName} (${Target.Level} ${Target.Class.ShortName}) ${If[${Target.Guild.NotEqual[\"NULL\"]},in ${Target.Guild},]}${If[${Target.Guild.NotEqual[\"NULL\"]},${If[${Target.GuildStatus.NotEqual[\"member\"]}, (${Target.GuildStatus}),]},]}"
 
 #define POPUPINTERVAL       2         // interval to show up any popup text in seconds
@@ -368,7 +368,7 @@ PLUGIN_API void InitializePlugin()
 	}
 	else {
 		gVerbose = false;
-		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "yes" : "no", INIFileName);
+		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "on" : "off", INIFileName);
 	}
 
 	SortType = SORT_DISTANCE;
@@ -891,15 +891,26 @@ void LoadPluginSettings()
 	GetPrivateProfileString("Settings", "ChatColorRem", szDefault, szTemp, MAX_STRING, INIFileName);
 	g_ChatColorRem = GetColor(szTemp, COLORCA);
 
-	g_UseConColor = GetPrivateProfileInt("Settings", "UseConColor", true, INIFileName) & 0x01;
-	g_UseMQ2Chat = GetPrivateProfileInt("Settings", "UseMQ2Chat", true, INIFileName) & 0x01;
+	GetPrivateProfileString("Settings", "UseConColor", "on", szTemp, MAX_STRING, INIFileName);
+	g_UseConColor = (!_strnicmp(szTemp, "1", 1) || !_strnicmp(szTemp, "on", 2) || !_strnicmp(szTemp, "yes", 3)) ? true : false;
+
+	GetPrivateProfileString("Settings", "UseMQ2Chat", "on", szTemp, MAX_STRING, INIFileName);
+	g_UseMQ2Chat = (!_strnicmp(szTemp, "1", 1) || !_strnicmp(szTemp, "on", 2) || !_strnicmp(szTemp, "yes", 3)) ? true : false;
+
 	GetPrivateProfileString("Settings", "UpdateInBackground", "on", szTemp, MAX_STRING, INIFileName);
-	bBGUpdate = _strnicmp(szTemp, "on", 2) ? false : true;
+	bBGUpdate = (!_strnicmp(szTemp, "1", 1) || !_strnicmp(szTemp, "on", 2) || !_strnicmp(szTemp, "yes", 3)) ? true : false;
+
+	GetPrivateProfileString("Settings", "UseTimeStamp", "on", szTemp, MAX_STRING, INIFileName);
+	g_useTimeStamp = (!_strnicmp(szTemp, "1", 1) || !_strnicmp(szTemp, "on", 2) || !_strnicmp(szTemp, "yes", 3)) ? true : false;
+
+	GetPrivateProfileString("Settings", "UseChatReport", "on", szTemp, MAX_STRING, INIFileName);
+	g_useChatReport = (!_strnicmp(szTemp, "1", 1) || !_strnicmp(szTemp, "on", 2) || !_strnicmp(szTemp, "yes", 3)) ? true : false;
+
+	GetPrivateProfileString("Settings", "UseAllZone", "on", szTemp, MAX_STRING, INIFileName);
+	g_useAllZone = (!_strnicmp(szTemp, "1", 1) || !_strnicmp(szTemp, "on", 2) || !_strnicmp(szTemp, "yes", 3)) ? true : false;
+
 	g_mp3Length = GetPrivateProfileInt("Settings", "MP3Length", 3000, INIFileName);
 	g_wavLength = GetPrivateProfileInt("Settings", "WavLength", 0, INIFileName);
-	g_useTimeStamp = GetPrivateProfileInt("Settings", "UseTimeStamp", false, INIFileName) & 0x01;
-	g_useChatReport = GetPrivateProfileInt("Settings", "UseChatReport", true, INIFileName) & 0x01;
-	g_useAllZone = GetPrivateProfileInt("Settings", "UseAllZone", true, INIFileName) & 0x01;
 	GetPrivateProfileString("Settings", "TimeStampFormat", "[%H:%M:%S]", g_TimeStampFormat, MAX_STRING, INIFileName);
 	LoadHUDString();
 	LoadChatString();
@@ -912,8 +923,7 @@ void SavePluginSettings()
 
 	CHAR szTemp[MAX_STRING] = { 0 };
 	// save Number of Targets to display
-	sprintf_s(szTemp, "%d", (int)g_numWatchedTargets);
-	WritePrivateProfileString("Settings", "NumDisplayed", szTemp, INIFileName);
+	WritePrivateProfileInt("Settings", "NumDisplayed", (int)g_numWatchedTargets, INIFileName);
 
 	sprintf_s(szTemp, "%u", nFontSize);
 	WritePrivateProfileString("Settings", "HUDFontSize", szTemp, INIFileName);
@@ -943,40 +953,29 @@ void SavePluginSettings()
 	sprintf_s(szTemp, "%02X%02X%02X", Color.R, Color.G, Color.B);
 	WritePrivateProfileString("Settings", "TargetHUDColor", szTemp, INIFileName);
 
-	sprintf_s(szTemp, "%d", g_UseConColor ? 1 : 0);
-	WritePrivateProfileString("Settings", "UseConColor", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "UseConColor", g_UseConColor ? "on" : "off", INIFileName);
 
-	sprintf_s(szTemp, "%s", g_HUDString);
-	WritePrivateProfileString("Settings", "HUDString", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "HUDString", g_HUDString, INIFileName);
 
-	sprintf_s(szTemp, "%s", g_NotifyHUDString);
-	WritePrivateProfileString("Settings", "NotifyHUDString", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "NotifyHUDString", g_NotifyHUDString, INIFileName);
 
-	sprintf_s(szTemp, "%s", g_NotifyChatString);
-	WritePrivateProfileString("Settings", "NotifyChatString", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "NotifyChatString", g_NotifyChatString, INIFileName);
 
-	sprintf_s(szTemp, "%d", g_UseMQ2Chat ? 1 : 0);
-	WritePrivateProfileString("Settings", "UseMQ2Chat", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "UseMQ2Chat", g_UseMQ2Chat ? "on" : "off", INIFileName);
 
 	WritePrivateProfileString("Settings", "UpdateInBackground", bBGUpdate ? "on" : "off", INIFileName);
 
-	sprintf_s(szTemp, "%u", g_mp3Length);
-	WritePrivateProfileString("Settings", "MP3Length", szTemp, INIFileName);
+	WritePrivateProfileInt("Settings", "MP3Length", g_mp3Length, INIFileName);
 
-	sprintf_s(szTemp, "%d", g_wavLength);
-	WritePrivateProfileString("Settings", "WavLength", szTemp, INIFileName);
+	WritePrivateProfileInt("Settings", "WavLength", g_wavLength, INIFileName);
 
-	sprintf_s(szTemp, "%d", g_useTimeStamp ? 1 : 0);
-	WritePrivateProfileString("Settings", "UseTimeStamp", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "UseTimeStamp", g_useTimeStamp ? "on" : "off", INIFileName);
 
-	sprintf_s(szTemp, "%s", g_TimeStampFormat);
-	WritePrivateProfileString("Settings", "TimeStampFormat", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "TimeStampFormat", g_TimeStampFormat, INIFileName);
 
-	sprintf_s(szTemp, "%d", g_useChatReport ? 1 : 0);
-	WritePrivateProfileString("Settings", "UseChatReport", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "UseChatReport", g_useChatReport ? "on" : "off", INIFileName);
 
-	sprintf_s(szTemp, "%d", g_useAllZone ? 1 : 0);
-	WritePrivateProfileString("Settings", "UseAllZone", szTemp, INIFileName);
+	WritePrivateProfileString("Settings", "UseAllZone", g_useAllZone ? "on" : "off", INIFileName);
 
 	char szColor[MAX_STRING] = { 0 };
 	int x;
@@ -1055,7 +1054,7 @@ void LoadZoneTargets()
 		}
 		else {
 			gVerbose = false;
-			WritePrivateProfileString("Settings", "Verbose", gVerbose ? "yes" : "no", INIFileName);
+			WritePrivateProfileString("Settings", "Verbose", gVerbose ? "on" : "off", INIFileName);
 		}
 		if (gVerbose)
 			WatchList(zone);
@@ -1218,7 +1217,7 @@ BOOL AddToTargetList(PCHAR targetName, bool bNotify, int nSound, int Priority, b
 	}
 	else {
 		gVerbose = false;
-		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "yes" : "no", INIFileName);
+		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "on" : "off", INIFileName);
 	}
 	if (bVerbose || gVerbose) {
 		sprintf_s(szMsg, "Watching for \"%s\"", targetName);
@@ -1489,19 +1488,21 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 		g_useChatReport = !g_useChatReport;
 		sprintf_s(szTemp, "\atReporting spawns to chat now %s\ax", g_useChatReport ? "\agON" : "\arOFF");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
+		WritePrivateProfileString("Settings", "UseChatReport", g_useChatReport ? "on" : "off", INIFileName);
 	}
 	else if (lcArg1 == "mq2chat")
 	{
 		g_UseMQ2Chat = !g_UseMQ2Chat;
 		sprintf_s(szTemp, "\atChat output now goes to %s \atchat", g_UseMQ2Chat ? "\agMQ2" : "\arEQ");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
-		WritePrivateProfileString("Settings", "UseMQ2Chat", g_UseMQ2Chat ? "1" : "0", INIFileName);
+		WritePrivateProfileString("Settings", "UseMQ2Chat", g_UseMQ2Chat ? "on" : "off", INIFileName);
 	}
 	else if (lcArg1 == "all")
 	{
 		g_useAllZone = !g_useAllZone;
 		sprintf_s(szTemp, "\atAll zone watch options now %s\ax", g_useAllZone ? "\agON" : "\arOFF");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
+		WritePrivateProfileString("Settings", "UseAllZone", g_useAllZone ? "on" : "off", INIFileName);
 	}
 	else if (lcArg1 == "debug")
 	{
@@ -1512,16 +1513,16 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 	else if (lcArg1 == "verbose")
 	{
 		gVerbose = !gVerbose;
-		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "yes" : "no", INIFileName);
 		sprintf_s(szTemp, "\atVerbose mode is now %s\ax", gVerbose ? "\agON" : "\arOFF");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
+		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "on" : "off", INIFileName);
 	}
 	else if (lcArg1 == "concolor")
 	{
 		g_UseConColor = !g_UseConColor;
-		WritePrivateProfileString("Settings", "UseConColor", g_UseConColor ? "yes" : "no", INIFileName);
 		sprintf_s(szTemp, "\atMob con color mode is now %s\ax", g_UseConColor ? "\agON" : "\arOFF");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
+		WritePrivateProfileString("Settings", "UseConColor", g_UseConColor ? "on" : "off", INIFileName);
 	}
 	else if (lcArg1 == "sorttype")
 	{
@@ -1686,11 +1687,11 @@ void WatchAdd(PCHAR zone, PCHAR targetName, int Priority, bool bNotify, int Soun
 	// show the current watch list
 	gVerbose = false;
 	if (GetPrivateProfileString("Settings", "Verbose", NULL, szTemp, MAX_STRING, INIFileName)) {
-		if (!_stricmp(szTemp, "yes") || !_stricmp(szTemp, "on"))
+		if (!_stricmp(szTemp, "on") || !_stricmp(szTemp, "off"))
 			gVerbose = true;
 	}
 	else
-		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "yes" : "no", INIFileName);
+		WritePrivateProfileString("Settings", "Verbose", gVerbose ? "on" : "off", INIFileName);
 	// want to do this because we don't want a "hole" in our ini target list
 	if (AddToTargetList(szTarget, bNotify, Sound, Priority, bHUD, gVerbose))
 		DumpTargetsToINI(zone);
