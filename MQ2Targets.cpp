@@ -47,7 +47,7 @@ x.xx -------- - Various code over the last couple years added by htw, spawn/desp
 #define SECONDINTERVAL      1         // 1 second interval
 
 PreSetup("MQ2Targets");
-PLUGIN_VERSION(3.24);
+PLUGIN_VERSION(3.25);
 
 using namespace std;
 
@@ -418,14 +418,31 @@ PLUGIN_API void InitializePlugin()
 		WritePrivateProfileString("Settings", "SortOrder", SortOrderNames[(int)nsSortOrder], INIFileName);
 
 	DisplayEnabled = true;
-	if (GetPrivateProfileString("Settings", "DisplayHUDElements", NULL, szTemp, MAX_STRING, INIFileName)) {
-		if (!_stricmp(szTemp, "yes") || !_stricmp(szTemp, "on"))
-			DisplayEnabled = true;
+	if (gGameState == GAMESTATE_INGAME && true == g_bReadyToSearch)
+	{
+		char szINIFileName[MAX_STRING] = { 0 }, szTemp[MAX_STRING] = { 0 };
+		sprintf_s(szINIFileName, "%s\\%s_%s.ini", gPathConfig, GetServerShortName(), pLocalPC->Name);
+		if (GetPrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", NULL, szTemp, MAX_STRING, szINIFileName)) {
+			if (!_stricmp(szTemp, "no") || !_stricmp(szTemp, "off"))
+				DisplayEnabled = false;
+			else
+				DisplayEnabled = true;
+		}
 		else
-			DisplayEnabled = false;
+			WritePrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
+		StartSearchingForTargets();
 	}
 	else
-		WritePrivateProfileString("Settings", "DisplayHUDElements", DisplayEnabled ? "on" : "off", INIFileName);
+	{
+		if (GetPrivateProfileString("Settings", "DisplayHUDElements", NULL, szTemp, MAX_STRING, INIFileName)) {
+			if (!_stricmp(szTemp, "no") || !_stricmp(szTemp, "off"))
+				DisplayEnabled = false;
+			else
+				DisplayEnabled = true;
+		}
+		else
+			WritePrivateProfileString("Settings", "DisplayHUDElements", DisplayEnabled ? "on" : "off", INIFileName);
+	}
 
 	Notifications.clear();
 	InitializeCriticalSection(&g_csTargetSection);
@@ -706,10 +723,10 @@ PLUGIN_API void SetGameState(DWORD GameState)
 		sprintf_s(szINIFileName, "%s\\%s_%s.ini", gPathConfig, GetServerShortName(), pLocalPC->Name);
 		DisplayEnabled = true;
 		if (GetPrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", NULL, szTemp, MAX_STRING, szINIFileName)) {
-			if (!_stricmp(szTemp, "yes") || !_stricmp(szTemp, "on"))
-				DisplayEnabled = true;
-			else
+			if (!_stricmp(szTemp, "no") || !_stricmp(szTemp, "off"))
 				DisplayEnabled = false;
+			else
+				DisplayEnabled = true;
 		}
 		else
 			WritePrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
@@ -1419,14 +1436,32 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 		DisplayEnabled = true;
 		sprintf_s(szTemp, "\atMQ2Targets HUD elements now %s\ax", DisplayEnabled ? "\agSHOWN" : "\arHIDDEN");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
-		WritePrivateProfileString("Settings", "DisplayHUDElements", DisplayEnabled ? "on" : "off", INIFileName);
+		if (gGameState == GAMESTATE_INGAME && true == g_bReadyToSearch)
+		{
+			char szINIFileName[MAX_STRING] = { 0 }, szTemp[MAX_STRING] = { 0 };
+			sprintf_s(szINIFileName, "%s\\%s_%s.ini", gPathConfig, GetServerShortName(), pLocalPC->Name);
+			WritePrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
+		}
+		else
+		{
+			WritePrivateProfileString("Settings", "DisplayHUDElements", DisplayEnabled ? "on" : "off", INIFileName);
+		}
 	}
 	else if (lcArg1 == "hide")
 	{
 		DisplayEnabled = false;
 		sprintf_s(szTemp, "\atMQ2Targets HUD elements now %s\ax", DisplayEnabled ? "\agSHOWN" : "\arHIDDEN");
 		WriteToChat(szTemp, USERCOLOR_DEFAULT);
-		WritePrivateProfileString("Settings", "DisplayHUDElements", DisplayEnabled ? "on" : "off", INIFileName);
+		if (gGameState == GAMESTATE_INGAME && true == g_bReadyToSearch)
+		{
+			char szINIFileName[MAX_STRING] = { 0 }, szTemp[MAX_STRING] = { 0 };
+			sprintf_s(szINIFileName, "%s\\%s_%s.ini", gPathConfig, GetServerShortName(), pLocalPC->Name);
+			WritePrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
+		}
+		else
+		{
+			WritePrivateProfileString("Settings", "DisplayHUDElements", DisplayEnabled ? "on" : "off", INIFileName);
+		}
 	}
 	else if (lcArg1 == "hudstring" && lcArg2.length() > 0)
 		WatchHUD((PCHAR)lcArg2.c_str());

@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,24
- PRODUCTVERSION 3,24
+ FILEVERSION 3,25
+ PRODUCTVERSION 3,25
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -73,11 +73,11 @@ BEGIN
 #else
             VALUE "FileDescription", "MQ2Targets Release Version"
 #endif
-            VALUE "FileVersion", "3.24"
+            VALUE "FileVersion", "3.25"
             VALUE "InternalName", "MQ2Targets.dll"
             VALUE "OriginalFilename", "MQ2Targets.dll"
             VALUE "ProductName", "MQ2Targets"
-            VALUE "ProductVersion", "3.24"
+            VALUE "ProductVersion", "3.25"
         END
     END
     BLOCK "VarFileInfo"
