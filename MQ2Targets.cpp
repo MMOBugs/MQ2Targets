@@ -359,7 +359,8 @@ void DebugChat(PCHAR szFormat, ...)
 PLUGIN_API void InitializePlugin()
 {
 	char szTemp[MAX_STRING] = { 0 };
-	DebugSpewAlways("Initializing MQ2Targets");
+	if (DEBUGGING)
+		DebugSpewAlways("Initializing MQ2Targets");
 	if (GetPrivateProfileString("Settings", "Verbose", NULL, szTemp, MAX_STRING, INIFileName)) {
 		if (!_stricmp(szTemp, "yes") || !_stricmp(szTemp, "on"))
 			gVerbose = true;
@@ -465,7 +466,8 @@ PLUGIN_API void InitializePlugin()
 // Called once, when the plugin is to shutdown
 PLUGIN_API void ShutdownPlugin()
 {
-	DebugSpewAlways("Shutting down MQ2Targets");
+	if (DEBUGGING)
+		DebugSpewAlways("Shutting down MQ2Targets");
 	AlreadyShown = true;
 	SavePluginSettings();
 
@@ -482,7 +484,8 @@ PLUGIN_API void ShutdownPlugin()
 
 PLUGIN_API void OnBeginZone()
 {
-	DebugSpewAlways("MQ2Targets::OnBeginZone()");
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::OnBeginZone()");
 	Notifications.clear();
 	g_bReadyToSearch = false;
 
@@ -556,7 +559,7 @@ PLUGIN_API void OnDrawHUD()
 		{
 			CHAR szHUD[MAX_STRING] = { 0 };
 
-			for (size_t N = 0; N < std::min(nFound, g_numWatchedTargets); N++)
+			for (size_t N = 0; N < std::min(nFound, g_numWatchedTargets) && N < g_Targets.size(); N++)
 			{
 				PSPAWNINFO theTarget = g_Targets[N].pSpawn;
 				if (theTarget)
@@ -575,7 +578,16 @@ PLUGIN_API void OnDrawHUD()
 
 					unsigned int color = g_HUDColor;
 					if (g_UseConColor)
-						color = ConColorToARGB(ConColor(theTarget));
+					{
+						if (theTarget && theTarget->SpawnID)
+						{
+							PSPAWNINFO pLocalSpawn = GetSpawnByID(theTarget->SpawnID);
+							if (pLocalSpawn)
+							{
+								color = ConColorToARGB(ConColor(pLocalSpawn));
+							}
+						}
+					}
 
 					DisplayHUDTarget(g_Targets[N], X, Y, color);
 				}
@@ -586,7 +598,6 @@ PLUGIN_API void OnDrawHUD()
 	if (time(NULL) > (g_timerSeconds + POPUPINTERVAL))
 	{
 		// reset "timer"
-		//DebugSpewAlways("MQ2Targets::OnDrawHUD() - Popping up any Notify Targets");
 		g_timerSeconds = time(NULL);
 		PopupNotifyTarget();
 	}
@@ -715,7 +726,8 @@ void DisplayHUDTarget(TargetEntryFloat& targInfo, DWORD X, DWORD Y, DWORD color)
 // Called once directly after initialization, and then every time the gamestate changes
 PLUGIN_API void SetGameState(DWORD GameState)
 {
-	DebugSpewAlways("MQ2Targets::SetGameState (%d)", GameState);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::SetGameState (%d)", GameState);
 
 	if (GameState == GAMESTATE_INGAME && true == g_bReadyToSearch)
 	{
@@ -741,7 +753,8 @@ PLUGIN_API DWORD OnWriteChatColor(PCHAR Line, DWORD Color, DWORD Filter)
 {
 	if (_stricmp(Line, "plugin 'MQ2targets' Loaded.") == 0)
 	{
-		//DebugSpewAlways("MQ2Targets::OnWriteChatColor(%s)", Line);
+		//if (DEBUGGING)
+			//DebugSpewAlways("MQ2Targets::OnWriteChatColor(%s)", Line);
 		g_bReadyToSearch = true;
 		// use that function to simulate starting the game
 		SetGameState(GAMESTATE_INGAME);
@@ -790,7 +803,8 @@ void LoadPluginSettings()
 {
 	char szTemp[MAX_STRING] = { 0 }, szDefault[MAX_STRING] = { 0 };
 	ARGBCOLOR RGB;
-	DebugSpewAlways("MQ2Targets::LoadPluginSettings()");
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::LoadPluginSettings()");
 
 	g_numWatchedTargets = GetPrivateProfileInt("Settings", "NumDisplayed", NUMTARGETS, INIFileName);
 	nFontSize = GetPrivateProfileInt("Settings", "HUDFontSize", FONTSIZE, INIFileName);
@@ -919,7 +933,8 @@ void LoadPluginSettings()
 void SavePluginSettings()
 {
 	ARGBCOLOR Color;
-	DebugSpewAlways("MQ2Targets::SavePluginSettings()");
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::SavePluginSettings()");
 
 	CHAR szTemp[MAX_STRING] = { 0 };
 	// save Number of Targets to display
@@ -1019,6 +1034,10 @@ void LoadZoneTargets()
 	DWORD ZoneID;
 	if (!InGame())
 		return;
+
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::LoadZoneTargets()");
+
 	ZoneID = pLocalPC->zoneId;
 	if (ZoneID > MAX_ZONES)
 		ZoneID &= 0x7FFF;
@@ -1026,8 +1045,6 @@ void LoadZoneTargets()
 		WriteChatf("\ar%s\aw::\ayBad zone ID: \ag%d", mqplugin::PluginName, ZoneID);
 		return;
 	}
-
-	DebugSpewAlways("MQ2Targets::LoadZoneTargets()");
 
 	CHAR zone[MAX_STRING] = ">unknown<";
 
@@ -1064,7 +1081,8 @@ void LoadZoneTargets()
 // dealing with targets in the INI file
 void ReadTargetsFromINI(PCHAR zone)
 {
-	DebugSpewAlways("MQ2Targets::ReadTargetsFromINI(%s)", zone);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::ReadTargetsFromINI(%s)", zone);
 
 	CHAR szTemp[MAX_STRING];
 	CHAR szBuffer[MAX_STRING];
@@ -1125,7 +1143,8 @@ void ReadTargetsFromINI(PCHAR zone)
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
-			DebugSpewAlways("MQ2Targets::ReadTargetsFromINI(%s): **strtok Exception**", zone);
+			if (DEBUGGING)
+				DebugSpewAlways("MQ2Targets::ReadTargetsFromINI(%s): **strtok Exception**", zone);
 		}
 
 		AddToTargetList(szBuffer, bNotify, nSound, Priority, bHUD);
@@ -1134,7 +1153,8 @@ void ReadTargetsFromINI(PCHAR zone)
 
 void DumpTargetsToINI(PCHAR zone)
 {
-	DebugSpewAlways("MQ2Targets::DumpTargetsToINI(%s)", zone);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::DumpTargetsToINI(%s)", zone);
 
 	CHAR szTemp[MAX_STRING] = { 0 };
 	// clean INI entries for entire zone
@@ -1175,7 +1195,8 @@ void DumpTargetsToINI(PCHAR zone)
 // dealing with Targets in memory
 void ClearTargets()
 {
-	DebugSpewAlways("MQ2Targets::ClearTargets()");
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::ClearTargets()");
 
 	g_SearchStrings.clear();
 	g_NotifySpawns.clear();
@@ -1183,7 +1204,8 @@ void ClearTargets()
 
 BOOL AddToTargetList(PCHAR targetName, bool bNotify, int nSound, int Priority, bool bHUD, bool bVerbose)
 {
-	DebugSpewAlways("MQ2Targets::AddToTargetList(%s, %s, %d)", targetName, bNotify ? "true" : "false", nSound);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::AddToTargetList(%s, %s, %d)", targetName, bNotify ? "true" : "false", nSound);
 
 	BOOL bReturn = FALSE;
 
@@ -1231,7 +1253,8 @@ BOOL AddToTargetList(PCHAR targetName, bool bNotify, int nSound, int Priority, b
 
 BOOL RemoveFromTargetList(PCHAR SpawnName, bool bNotify)
 {
-	DebugSpewAlways("MQ2Targets::RemoveFromTargetList(%s, %s)", SpawnName, bNotify ? "true" : "false");
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::RemoveFromTargetList(%s, %s)", SpawnName, bNotify ? "true" : "false");
 
 	CHAR szMsg[MAX_STRING] = { 0 };
 	list<SearchStringRecord>::iterator pSearchStrings = g_SearchStrings.begin();
@@ -2194,7 +2217,8 @@ void CheckForTargets(bool bState)
 {
 	g_CheckForTargets = bState;
 
-	DebugSpewAlways("MQ2Targets::CheckForTargets(%d)", bState);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::CheckForTargets(%d)", bState);
 }
 
 // returns number of new targets found
@@ -2279,7 +2303,8 @@ int FindMatchingSpawns(MQSpawnSearch* pSearchSpawn, SPAWNINFO* pOrigin, bool bNo
 {
 	int nReturn = 0;
 
-	//DebugSpewAlways("MQ2Targets::FindMatchingSpawns()");
+	//if (DEBUGGING)
+		//DebugSpewAlways("MQ2Targets::FindMatchingSpawns()");
 
 	if (!pSearchSpawn || !pOrigin)
 		return nReturn;
@@ -2463,6 +2488,8 @@ int AddToNotify(PSPAWNINFO pSpawn, int nSound, int Priority)
 
 void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 {
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d)", bPopup);
 	__time32_t long_time;
 	struct tm currentTime;
 	CHAR strTimeBuffer[MAX_STRING] = { 0 };
@@ -2473,6 +2500,8 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 	// see if it's already in our list.  If so, don't add it again
 	auto iter = g_NotifySpawns.begin();
 	DebugChat("RemoveFromNotify: pSpawn->SpawnID=%d, pSpawn->Name='%s'", SpawnID, DisplayedName);
+	if (DEBUGGING)
+		DebugSpewAlways("RemoveFromNotify: pSpawn->SpawnID=%d, pSpawn->Name='%s'", SpawnID, DisplayedName);
 	while (g_NotifySpawns.size() > 0 && iter != g_NotifySpawns.end())
 	{
 		NotifyRecord& rec = *iter;
@@ -2481,11 +2510,16 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 			continue;
 		}
 		DebugChat("Checking pItem->Spawn.SpawniD=%d vs pSpawn->SpawnID=%d, pSpawn->DisplayedName='%s', pItem->Spawn.DisplayedName = '%s'",
-			rec.SpawnID, SpawnID, DisplayedName, rec.DisplayedName);
+			rec.SpawnID, SpawnID, DisplayedName, rec.DisplayedName.c_str());
+		if (DEBUGGING)
+			DebugSpewAlways("Checking pItem->Spawn.SpawniD=%d vs pSpawn->SpawnID=%d, pSpawn->DisplayedName='%s', pItem->Spawn.DisplayedName = '%s'",
+				rec.SpawnID, SpawnID, DisplayedName, rec.DisplayedName.c_str());
 
 		if (rec.SpawnID == SpawnID && DisplayedName[0] && !rec.DisplayedName.empty() && strstr(DisplayedName, rec.DisplayedName.c_str()))
 		{
 			DebugChat("MQ2Targets::RemoveFromNotify((pSpawn), %d): Removing '%s' from list.", bPopup, rec.DisplayedName.c_str());
+			if (DEBUGGING)
+				DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): Removing '%s' from list.", bPopup, rec.DisplayedName.c_str());
 
 			if (bPopup)
 			{
@@ -2495,9 +2529,13 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 				size_t nIndex = 0;
 				for (; nIndex < Notifications.size(); nIndex++) {
 					NotificationsStruct& VectorRef = Notifications[nIndex];
+					if (DEBUGGING)
+						DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): Checking '%d' vs '%d'.", bPopup, VectorRef.spawnID, rec.SpawnID);
 					if (VectorRef.spawnID == rec.SpawnID) {
 						notifyText = VectorRef.notifyText.c_str();
 						nFound = true;
+						if (DEBUGGING)
+							DebugSpewAlways("Found set to true.");
 						break;
 					}
 				}
@@ -2505,6 +2543,8 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 					_time32(&long_time);
 					_localtime32_s(&currentTime, &long_time);
 					strftime(strTimeBuffer, MAX_STRING, g_TimeStampFormat, &currentTime);
+					if (DEBUGGING)
+						DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): Showing popup at %s.", bPopup, strTimeBuffer);
 					if (nFound) {
 						sprintf_s(szText, "%s despawned at %s", notifyText, strTimeBuffer);
 						Notifications.erase(Notifications.begin() + nIndex);
@@ -2512,6 +2552,8 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 						sprintf_s(szText, "%s despawned at %s", rec.DisplayedName.c_str(), strTimeBuffer);
 					}
 				} else {
+					if (DEBUGGING)
+						DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): Showing popup.", bPopup);
 					if (nFound) {
 						sprintf_s(szText, "%s despawned", notifyText);
 						Notifications.erase(Notifications.begin() + nIndex);
@@ -2527,15 +2569,21 @@ void RemoveFromNotify(uint32_t SpawnID, const char* DisplayedName, bool bPopup)
 					RGB.ARGB = g_ChatColorRem;
 					char szTmp[MAX_STRING] = { 0 };
 					sprintf_s(szTmp, "\a#%02X%02X%02X%s", RGB.R, RGB.G, RGB.B, szText);
+					if (DEBUGGING)
+						DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): Showing MQ2Chat string %s.", bPopup, szTmp);
 					WriteToChat(szTmp);
 				}
 			}
 			// get rid of the one I just showed
+			if (DEBUGGING)
+				DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): Removing '%s' from list.", bPopup, rec.DisplayedName.c_str());
 			g_NotifySpawns.erase(iter);
 			break;
 		}
 		iter++;
 	}
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::RemoveFromNotify((pSpawn), %d): %d items left in list.", bPopup, g_NotifySpawns.size());
 }
 
 // cleans up any spawns in the notify list based on the passed in search string
@@ -2706,7 +2754,8 @@ void PlayNotifySound(PCHAR pFileName)
 
 	_splitpath_s(szFileName, drive, dir, fname, ext);
 	sprintf_s(szFileName, "\"%s\\%s\"", gPathResources, pFileName);
-	DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Fullpath=%s, Drive=%s, Dir=%s, File=%s, Ext=%s", pFileName, szFileName, drive, dir, fname, ext);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Fullpath=%s, Drive=%s, Dir=%s, File=%s, Ext=%s", pFileName, szFileName, drive, dir, fname, ext);
 	bool bFound = false;
 	if (!_stricmp(ext, ".mp3"))
 	{
@@ -2715,7 +2764,8 @@ void PlayNotifySound(PCHAR pFileName)
 			sprintf_s(lpszPlayCommand, "play mySound from 0 notify");
 		else
 			sprintf_s(lpszPlayCommand, "play mySound from 0 to %u notify", g_mp3Length);
-		DebugSpewAlways("MQ2Targets:PlayNotifySound(%s): Playing .mp3 with \"%s\"", pFileName, lpszOpenCommand);
+		if (DEBUGGING)
+			DebugSpewAlways("MQ2Targets:PlayNotifySound(%s): Playing .mp3 with \"%s\"", pFileName, lpszOpenCommand);
 		bFound = true;
 	}
 	else if (!_stricmp(ext, ".wav"))
@@ -2725,7 +2775,8 @@ void PlayNotifySound(PCHAR pFileName)
 			sprintf_s(lpszPlayCommand, "play mySound from 0 notify");
 		else
 			sprintf_s(lpszPlayCommand, "play mySound from 0 to %u notify", g_wavLength);
-		DebugSpewAlways("MQ2Targets:PlayNotifySound(%s): Playing .wav with \"%s\"", pFileName, lpszOpenCommand);
+		if (DEBUGGING)
+			DebugSpewAlways("MQ2Targets:PlayNotifySound(%s): Playing .wav with \"%s\"", pFileName, lpszOpenCommand);
 		bFound = true;
 	}
 
@@ -2735,7 +2786,8 @@ void PlayNotifySound(PCHAR pFileName)
 		if (error)
 		{
 			mciGetErrorString(error, szError, MAX_STRING);
-			DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Error %d (%s) on %s", pFileName, error, szError, lpszOpenCommand);
+			if (DEBUGGING)
+				DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Error %d (%s) on %s", pFileName, error, szError, lpszOpenCommand);
 		}
 		else
 		{
@@ -2743,11 +2795,13 @@ void PlayNotifySound(PCHAR pFileName)
 			if (error)
 			{
 				mciGetErrorString(error, szError, MAX_STRING);
-				DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Error %d (%s) on status mySound length", pFileName, error, szError);
+				if (DEBUGGING)
+					DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Error %d (%s) on status mySound length", pFileName, error, szError);
 			}
 			else
 			{
-				DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Audio length %u", pFileName, atoi(szMsg));
+				if (DEBUGGING)
+					DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Audio length %u", pFileName, atoi(szMsg));
 				if (!_stricmp(ext, ".mp3"))
 				{
 					if ((unsigned)atoi(szMsg) < g_mp3Length)
@@ -2762,7 +2816,8 @@ void PlayNotifySound(PCHAR pFileName)
 				if (error)
 				{
 					mciGetErrorString(error, szError, MAX_STRING);
-					DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Error %d (%s) on %s", pFileName, error, szError, lpszPlayCommand);
+					if (DEBUGGING)
+						DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): Error %d (%s) on %s", pFileName, error, szError, lpszPlayCommand);
 				}
 			}
 		}
@@ -2773,7 +2828,8 @@ void PlayNotifySound(PCHAR pFileName)
 	if (!bFound)
 	{
 		PlaySound("nosound", NULL, SND_ASYNC);   // default beep
-		DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): PlaySound(nosound)", pFileName);
+		if (DEBUGGING)
+			DebugSpewAlways("MQ2Targets::PlayNotifySound(%s): PlaySound(nosound)", pFileName);
 	}
 }
 
@@ -2787,7 +2843,8 @@ void PlayNotifySound(int nSoundID)
 	GetPrivateProfileString("Sounds", szSoundID, "nosound", szSoundFile, MAX_STRING, INIFileName);
 
 	PlayNotifySound(szSoundFile);
-	DebugSpewAlways("MQ2Targets::PlayNotifySound(%d)", nSoundID);
+	if (DEBUGGING)
+		DebugSpewAlways("MQ2Targets::PlayNotifySound(%d)", nSoundID);
 }
 
 void StopNotifySound()
