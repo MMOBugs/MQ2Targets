@@ -715,7 +715,7 @@ void DisplayHUDTarget(TargetEntryFloat& targInfo, DWORD X, DWORD Y, DWORD color)
 
 		// now parse like MQ2HUD ini string
 		strcpy_s(outText, result.c_str());
-		ParseMacroParameter(pLocalPlayer, outText);
+		ParseMacroParameter(outText);
 		if (outText[0] && strcmp(outText, "NULL"))
 		{
 			DrawHUDText(outText, X, Y, color, nFontSize);
@@ -2653,8 +2653,6 @@ void PopupNotifyTarget()
 	CHAR szSpawnID[20] = { 0 };
 	NotificationsStruct tNotify;
 
-	PSPAWNINFO me = pLocalPlayer;
-
 	if (!g_NotifySpawns.empty())
 	{
 		nSound = 0;
@@ -2678,7 +2676,7 @@ void PopupNotifyTarget()
 					string result = replace(outText, "${Target.", szSpawnID);
 					strcpy_s(outText, result.c_str());
 				}
-				ParseMacroParameter(me, outText);
+				ParseMacroParameter(outText);
 				if (g_useTimeStamp) {
 					_time32(&long_time);
 					_localtime32_s(&currentTime, &long_time);
