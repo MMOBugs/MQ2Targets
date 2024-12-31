@@ -1325,6 +1325,25 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 		strcpy_s(szTemp, lcArg2.c_str());
 		WatchSound(szZone, szTemp);
 	}
+	else if (lcArg1 == "load" || lcArg1 == "reload") {
+		Notifications.clear();
+		g_bReadyToSearch = false;
+		CheckForTargets(false);
+		g_bReadyToSearch = true;
+		char szINIFileName[MAX_STRING] = { 0 }, szTemp[MAX_STRING] = { 0 };
+		sprintf_s(szINIFileName, "%s\\%s_%s.ini", gPathConfig, GetServerShortName(), pLocalPC->Name);
+		DisplayEnabled = true;
+		if (GetPrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", NULL, szTemp, MAX_STRING, szINIFileName)) {
+			if (!_stricmp(szTemp, "no") || !_stricmp(szTemp, "off"))
+				DisplayEnabled = false;
+			else
+				DisplayEnabled = true;
+		}
+		else
+			WritePrivateProfileString(mqplugin::PluginName, "DisplayHUDElements", DisplayEnabled ? "on" : "off", szINIFileName);
+		StartSearchingForTargets();
+		WriteChatf("\ar%s\aw::\agWatch spawn list reloaded.", mqplugin::PluginName);
+	}
 	else if (lcArg1 == "add" && lcArg2.length() > 0) {
 		szArg2[0] = 0;
 		if (!UseTarget) {
@@ -2149,7 +2168,7 @@ void WatchUsage(bool bHelp)
 		WriteChatf("\ay/watch del(ete)|rem(ove) [index #]");
 		WriteChatf("\ay/watch del|rem : by itself, if you have a target, will remove the target from watch list");
 	}
-	WriteChatf("\ay/watch [help] [(l)ist] [(time)stamp] [chat] [all] [debug] [limit n] [x #] [y #] [increment #] [verbose] [concolor] [mq2chat] [font #] [bg] [show] [hide]\ax");
+	WriteChatf("\ay/watch [help] [(l)ist] [(time)stamp] [chat] [all] [debug] [limit n] [x #] [y #] [increment #] [verbose] [concolor] [mq2chat] [font #] [bg] [show] [hide] [reload]\ax");
 	WriteChatf("\ay/watch [[color] [hud|guild|dead|target|chatadd|chatrem] [RGB] | [popupadd|popuprem] [color]]\ax");
 	WriteChatf("\ay/watch [[sorttype|sortorder|hudsorttype|hudsortorder [type|order]]\ax");
 	WriteChatf("\ay/watch sound [list|stop|id filename]\ax");
