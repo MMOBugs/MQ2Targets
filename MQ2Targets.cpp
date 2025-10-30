@@ -2201,7 +2201,7 @@ void WatchUsage(bool bHelp)
 	WriteChatf("\ao--------------------------------------------------------------------------------------------------------");
 }
 
-void WriteToChat(PCHAR szText, DWORD Color)
+void WriteToChat(const char* szText, DWORD Color)
 {
 	CHAR szOutput[MAX_STRING] = { 0 };
 	sprintf_s(szOutput, "%s: %s", mqplugin::PluginName, szText);
