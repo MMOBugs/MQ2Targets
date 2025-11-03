@@ -160,32 +160,32 @@ void SavePluginSettings();
 void LoadHUDString();
 void LoadChatString();
 // ini file targets
-void ReadTargetsFromINI(PCHAR zone);
-void DumpTargetsToINI(PCHAR zone);
+void ReadTargetsFromINI(const char* zone);
+void DumpTargetsToINI(const char* zone);
 // memory
 void LoadZoneTargets();
 void ClearTargets();
-BOOL AddToTargetList(PCHAR targetName, bool bNotify, int nSound, int Priority, bool bHUD, bool bVerbose = false);
-BOOL RemoveFromTargetList(PCHAR targetName, bool bNotify);
+BOOL AddToTargetList(const char* targetName, bool bNotify, int nSound, int Priority, bool bHUD, bool bVerbose = false);
+BOOL RemoveFromTargetList(const char* targetName, bool bNotify);
 // command handlers
-void WatchHandler(PSPAWNINFO pChar, PCHAR szLine);
-void WatchList(PCHAR zone);
-void WatchAdd(PCHAR zone, PCHAR targetName, int Priority, bool bNotify, int Sound, bool bHUD);
-void WatchRemove(PCHAR zone, PCHAR targetName, bool bNotify = false);
-void WatchTargets(PCHAR pTargets);
-void WatchXStart(PCHAR pXStart);
-void WatchYStart(PCHAR pYStart);
-void WatchYIncrement(PCHAR pYIncrement);
-void WatchFont(PCHAR nSize);
-void WatchColor(PCHAR HUDType, PCHAR HUDColor);
-void WatchTime(PCHAR pLine);
-void WatchHUD(PCHAR pLine);
-void WatchNotifyHUD(PCHAR pLine);
-void WatchChatHUD(PCHAR pLine);
-void WatchSound(PCHAR pZone, PCHAR pLine);
+void WatchHandler(PSPAWNINFO pChar, const char* szLine);
+void WatchList(const char* zone);
+void WatchAdd(const char* zone, const char* targetName, int Priority, bool bNotify, int Sound, bool bHUD);
+void WatchRemove(const char* zone, const char* targetName, bool bNotify = false);
+void WatchTargets(const char* pTargets);
+void WatchXStart(const char* pXStart);
+void WatchYStart(const char* pYStart);
+void WatchYIncrement(const char* pYIncrement);
+void WatchFont(const char* nSize);
+void WatchColor(const char* HUDType, char* HUDColor);
+void WatchTime(const char* pLine);
+void WatchHUD(const char* pLine);
+void WatchNotifyHUD(const char* pLine);
+void WatchChatHUD(const char* pLine);
+void WatchSound(const char*, const char* pLine);
 void WatchUsage(bool bHelp = false);
 // spam to window
-void WriteToChat(PCHAR szText, DWORD Color = USERCOLOR_DEFAULT);
+void WriteToChat(const char* szText, DWORD Color = USERCOLOR_DEFAULT);
 
 BOOL InGame();
 // target display
@@ -344,7 +344,7 @@ bool dataTargets(const char* szName, MQTypeVar& Dest)
 	return true;
 }
 
-void DebugChat(PCHAR szFormat, ...)
+void DebugChat(const char* szFormat, ...)
 {
 	if (!DEBUGGING)
 		return;
@@ -1079,7 +1079,7 @@ void LoadZoneTargets()
 }
 
 // dealing with targets in the INI file
-void ReadTargetsFromINI(PCHAR zone)
+void ReadTargetsFromINI(const char* zone)
 {
 	if (DEBUGGING)
 		DebugSpewAlways("MQ2Targets::ReadTargetsFromINI(%s)", zone);
@@ -1151,7 +1151,7 @@ void ReadTargetsFromINI(PCHAR zone)
 	} while (++i);
 }
 
-void DumpTargetsToINI(PCHAR zone)
+void DumpTargetsToINI(const char* zone)
 {
 	if (DEBUGGING)
 		DebugSpewAlways("MQ2Targets::DumpTargetsToINI(%s)", zone);
@@ -1202,7 +1202,7 @@ void ClearTargets()
 	g_NotifySpawns.clear();
 }
 
-BOOL AddToTargetList(PCHAR targetName, bool bNotify, int nSound, int Priority, bool bHUD, bool bVerbose)
+BOOL AddToTargetList(const char* targetName, bool bNotify, int nSound, int Priority, bool bHUD, bool bVerbose)
 {
 	if (DEBUGGING)
 		DebugSpewAlways("MQ2Targets::AddToTargetList(%s, %s, %d)", targetName, bNotify ? "true" : "false", nSound);
@@ -1251,7 +1251,7 @@ BOOL AddToTargetList(PCHAR targetName, bool bNotify, int nSound, int Priority, b
 	return bReturn;
 }
 
-BOOL RemoveFromTargetList(PCHAR SpawnName, bool bNotify)
+BOOL RemoveFromTargetList(const char* SpawnName, bool bNotify)
 {
 	if (DEBUGGING)
 		DebugSpewAlways("MQ2Targets::RemoveFromTargetList(%s, %s)", SpawnName, bNotify ? "true" : "false");
@@ -1276,7 +1276,7 @@ BOOL RemoveFromTargetList(PCHAR SpawnName, bool bNotify)
 }
 
 // Command Handlers
-void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
+void WatchHandler(PSPAWNINFO pChar, const char* szLine)
 {
 	CHAR szTemp[MAX_STRING] = { 0 }, szZone[MAX_STRING] = { 0 }, szArg1[MAX_STRING] = { 0 }, szArg2[MAX_STRING] = { 0 }, szArg3[MAX_STRING] = { 0 }, szArg4[MAX_STRING] = { 0 };
 	DWORD ZoneID;
@@ -1680,7 +1680,7 @@ void WatchHandler(PSPAWNINFO pChar, PCHAR szLine)
 		WatchUsage();
 }
 
-void WatchList(PCHAR zone)
+void WatchList(const char* zone)
 {
 	CHAR szMsg[MAX_STRING] = { 0 };
 
@@ -1717,7 +1717,7 @@ void WatchList(PCHAR zone)
 	AlreadyShown = false;
 }
 
-void WatchAdd(PCHAR zone, PCHAR targetName, int Priority, bool bNotify, int Sound, bool bHUD)
+void WatchAdd(const char* zone, const char* targetName, int Priority, bool bNotify, int Sound, bool bHUD)
 {
 	char szTemp[MAX_STRING] = { 0 }, szTarget[MAX_STRING] = { 0 };
 	if (!zone || !targetName) {
@@ -1743,7 +1743,7 @@ void WatchAdd(PCHAR zone, PCHAR targetName, int Priority, bool bNotify, int Soun
 	CheckTargets();
 }
 
-void WatchRemove(PCHAR zone, PCHAR searchString, bool bNotify)
+void WatchRemove(const char* zone, const char* searchString, bool bNotify)
 {
 	if (0 == zone || 0 == searchString)
 	{
@@ -1784,7 +1784,7 @@ void WatchRemove(PCHAR zone, PCHAR searchString, bool bNotify)
 	CheckTargets();
 }
 
-void WatchTargets(PCHAR pNumTargets)
+void WatchTargets(const char* pNumTargets)
 {
 	if (NULL != pNumTargets && IsNumber(pNumTargets))
 	{
@@ -1801,7 +1801,7 @@ void WatchTargets(PCHAR pNumTargets)
 		WatchUsage();
 }
 
-void WatchXStart(PCHAR pXStart)
+void WatchXStart(const char* pXStart)
 {
 	if (NULL != pXStart && IsNumber(pXStart))
 	{
@@ -1818,7 +1818,7 @@ void WatchXStart(PCHAR pXStart)
 		WatchUsage();
 }
 
-void WatchYStart(PCHAR pYStart)
+void WatchYStart(const char* pYStart)
 {
 	if (NULL != pYStart && IsNumber(pYStart))
 	{
@@ -1835,7 +1835,7 @@ void WatchYStart(PCHAR pYStart)
 		WatchUsage();
 }
 
-void WatchYIncrement(PCHAR pYIncrement)
+void WatchYIncrement(const char* pYIncrement)
 {
 	if (NULL != pYIncrement && IsNumber(pYIncrement))
 	{
@@ -1852,7 +1852,7 @@ void WatchYIncrement(PCHAR pYIncrement)
 		WatchUsage();
 }
 
-void WatchFont(PCHAR nSize)
+void WatchFont(const char* nSize)
 {
 	if (NULL != nSize && IsNumber(nSize))
 	{
@@ -1869,7 +1869,7 @@ void WatchFont(PCHAR nSize)
 		WatchUsage();
 }
 
-void WatchColor(PCHAR HUDType, PCHAR HUDColor)
+void WatchColor(const char* HUDType, char* HUDColor)
 {
 	char szColor[20], szTemp[MAX_STRING] = { 0 };
 	if (!HUDType || !HUDColor)
@@ -1920,7 +1920,7 @@ void WatchColor(PCHAR HUDType, PCHAR HUDColor)
 	WriteToChat(szTemp);
 }
 
-void WatchTime(PCHAR pLine)
+void WatchTime(const char* pLine)
 {
 	if (NULL != pLine)
 	{
@@ -1950,7 +1950,7 @@ void WatchTime(PCHAR pLine)
 		WatchUsage(true);
 }
 
-void WatchHUD(PCHAR pLine)
+void WatchHUD(const char* pLine)
 {
 	if (NULL != pLine)
 	{
@@ -1998,7 +1998,7 @@ void WatchHUD(PCHAR pLine)
 		WatchUsage(true);
 }
 
-void WatchNotifyHUD(PCHAR pLine)
+void WatchNotifyHUD(const char* pLine)
 {
 	if (NULL != pLine)
 	{
@@ -2046,7 +2046,7 @@ void WatchNotifyHUD(PCHAR pLine)
 		WatchUsage(true);
 }
 
-void WatchChatHUD(PCHAR pLine)
+void WatchChatHUD(const char* pLine)
 {
 	if (NULL != pLine)
 	{
@@ -2094,7 +2094,7 @@ void WatchChatHUD(PCHAR pLine)
 		WatchUsage(true);
 }
 
-void WatchSound(PCHAR pZone, PCHAR pLine)
+void WatchSound(const char* pZone, const char* pLine)
 {
 	CHAR szCommand[MAX_STRING] = { 0 };
 	GetArg(szCommand, pLine, 1);
@@ -2201,7 +2201,7 @@ void WatchUsage(bool bHelp)
 	WriteChatf("\ao--------------------------------------------------------------------------------------------------------");
 }
 
-void WriteToChat(PCHAR szText, DWORD Color)
+void WriteToChat(const char* szText, DWORD Color)
 {
 	CHAR szOutput[MAX_STRING] = { 0 };
 	sprintf_s(szOutput, "%s: %s", mqplugin::PluginName, szText);
