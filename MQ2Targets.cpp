@@ -530,7 +530,7 @@ PLUGIN_API void OnDrawHUD()
 			if (SortType == SORT_LEVEL)
 				g_Targets[N].Float = (float)theTarget->Level;
 			else if (SortType == SORT_DISTANCE)
-				g_Targets[N].Float = GetDistance(me, theTarget);
+				g_Targets[N].Float = GetDistance2D(me, theTarget);
 			else if (SortType == SORT_PRIORITY) {
 				int lPriority = 0;
 				for (size_t X = 0; X < g_nsTargets.size(); X++)
@@ -2438,8 +2438,8 @@ static int pMQRankCompareNS_(const TargetEntryInt& A, const TargetEntryInt& B)
 
 	if (nsSortType == SORT_DISTANCE) {
 		if (pLocalPlayer) {
-			float DistA = GetDistanceSquared(pLocalPlayer, A.pSpawn);
-			float DistB = GetDistanceSquared(pLocalPlayer, B.pSpawn);
+			float DistA = GetDistanceSquared2D(pLocalPlayer, A.pSpawn);
+			float DistB = GetDistanceSquared2D(pLocalPlayer, B.pSpawn);
 			if (DistA == DistB)
 				return _stricmp(B.pSpawn->DisplayedName, A.pSpawn->DisplayedName) * -1;
 			if (nsSortOrder == SORT_NORMAL) {
